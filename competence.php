@@ -14,21 +14,14 @@ use Friendica\Core\System;
 use Friendica\Core\Logger;
 use Friendica\Content\Nav;
 use Friendica\Core\Renderer;
-use Friendica\Core\PConfig;
 use Friendica\Core\Config;
-use Friendica\Core\Worker;
 
 use Friendica\Util\Strings;
 
-
-use Friendica\Database\DBM;
 use Friendica\Database\DBA;
 
 use Friendica\Model\Profile;
 use Friendica\Model\Contact;
-use Friendica\Model\Group;
-use Friendica\Model\Item;
-use Friendica\Model\Term;
 
 use Friendica\Protocol\DFRN;
 
@@ -60,8 +53,6 @@ function competence_profile_tabs($a, &$b) {
 
 
 function competence_module() {}
-
-
 
 
 function competence_init($a) {
@@ -104,26 +95,80 @@ function competence_init($a) {
 		]);
 
 
-		/*if(! x($a->page,'aside'))
-			$a->page['aside'] = '';*/
+		if(! array_key_exists('aside', $a->page))
+			$a->page['aside'] = '';
 		$a->page['aside'] .= $vcard_widget;
 
 	}
 }
 
 function competence_content(App $a) {
-	$o = '';
-		
+	if((Config::get('system','block_public')) && (! local_user()) && (! remote_user())) {
+		notice(L10n::t('Public access denied.') . EOL);
+		return;
+	}
 
+	$o = '';
 	$is_owner = local_user() == $a->user['uid'];
 
+
+	include_once("/var/www/friendica/addon/competence/arc2-starter-pack/arc/ARC2.php");
+	include_once("/var/www/friendica/addon/competence/arc2-starter-pack/config.php");
+	$store = ARC2::getStore($arc_config);
+	if (!$store->isSetUp()) {
+		$store->setUp(); /* create MySQL tables */
+	}
+	$q = '
+		SELECT DISTINCT ?subject ?property ?object WHERE { 
+		?subject ?property ?object .
+		}
+	';
 	$t = '';
-	$teste = '';
-	$competencies = [];
+	$rows = $store->query($q, 'rows');
+
+	$competenciesOWL = [];
+	if ($rows) {
+		foreach ($rows as $row) {
+			if(strpos($row['subject'], "#Competency_")){
+				$competenciesOWL[] = $row;
+			}
+		}
+	} else{
+		return;
+	}
+
+
+	if(! array_key_exists('user', $a->data)) {
+		notice(L10n::t('No competencie selected') . EOL );
+		return;
+	}
+        
+
+        $competencies = [];
+
+	foreach($competenciesOWL as $owl){
+		$name = '';
+		$statement = '';
+
+
+		$competencies[] = [
+			'id'          => 0,
+			
+		        'name'        => $name,
+			'statement'   => $statement,
+
+		        '$show'        => $is_owner ? '': 'none' ,
+		        'edit'        => 'update_competencie/' . $a->user['nickname'] .'/'. 0,
+		        'del'         => 'competencie/'. $a->user['nickname'] .'/'. 0 
+		];
+	}
+
+
+
 
 	$o .= Profile::getTabs($a, $is_owner, $a->profile['nickname']);
 
-	$tpl = Renderer::getMarkupTemplate("competencie.tpl", "addon/competence/");
+	$tpl = Renderer::getMarkupTemplate("competencies.tpl", "addon/competence/");
 
 	$o .= Renderer::replaceMacros($tpl, [
 		'q'	       => $t,
@@ -132,6 +177,7 @@ function competence_content(App $a) {
 		'$edit'        => 'Editar competencia',
                 '$del'         => 'Deletar',
                 '$add'         => 'Adicionar competencia',
+		'$addLink'     => System::baseUrl().'/competence/add_competence/' . $a->user['nickname'],
 		'$competencies'=> $competencies,
 	]);
 

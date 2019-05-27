@@ -1,0 +1,273 @@
+<?xml version="1.0"?>
+<rdf:RDF
+    xmlns:swrlb="http://www.w3.org/2003/11/swrlb#"
+    xmlns:swrl="http://www.w3.org/2003/11/swrl#"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:daml="http://www.daml.org/2001/03/daml+oil#"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns="http://www.professional-learning.eu/ontologies/competence.owl#"
+  xml:base="http://www.professional-learning.eu/ontologies/competence.owl">
+  <owl:Ontology rdf:about="">
+    <dc:creator rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >Andreas Schmidt (Andreas.Schmidt@fzi.de)</dc:creator>
+    <owl:versionInfo rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >Version 1.0, 25.6.2006</owl:versionInfo>
+    <owl:imports rdf:resource="http://www.w3.org/2003/11/swrl"/>
+    <dc:contributor rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >Christine Kunzmann</dc:contributor>
+    <owl:imports rdf:resource="http://protege.stanford.edu/plugins/owl/dc/protege-dc.owl"/>
+    <dc:publisher xml:lang="en">FZI Research Center for Information Technologies, Information Process 
+    Engineering, Karlsruhe, Germany - http://www.fzi.de</dc:publisher>
+    <dc:rights rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >(c) Andreas Schmidt 2006</dc:rights>
+    <dc:title xml:lang="en">Reference Ontology for Competency Management and Competency-Oriented 
+    Learning Support</dc:title>
+    <owl:imports rdf:resource="http://www.w3.org/2003/11/swrlb"/>
+    <dc:description xml:lang="en">This ontology represents a top-level ontology for competence management 
+    application and competency-oriented learning support systems. It has been 
+    developed in the Information Process Engineering group at FZI Research 
+    Center for Information Technologies, Karlsruhe, Germany</dc:description>
+  </owl:Ontology>
+  <owl:Class rdf:ID="Task">
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="OrganizationalEntity"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="LanguageProficiencyScale">
+    <rdfs:label xml:lang="de">Sprachleistungsskala</rdfs:label>
+    <rdfs:label xml:lang="en">language proficiency scale</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="CompetencyScale"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="#OrganizationalEntity">
+    <rdfs:label xml:lang="en">organizational entity</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="Topic"/>
+    </rdfs:subClassOf>
+    <rdfs:label xml:lang="de">Organisationseinheit</rdfs:label>
+  </owl:Class>
+  <owl:Class rdf:ID="SelfAssessment">
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="CompetencyEvidence"/>
+    </rdfs:subClassOf>
+    <rdfs:label xml:lang="en">self assessment</rdfs:label>
+    <rdfs:label xml:lang="de">Selbstbewertung</rdfs:label>
+  </owl:Class>
+  <owl:Class rdf:ID="ProcessActivity">
+    <rdfs:subClassOf rdf:resource="#OrganizationalEntity"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Qualification">
+    <rdfs:label xml:lang="en">Qualification</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Topic"/>
+    </rdfs:subClassOf>
+    <rdfs:label xml:lang="de">Qualifikation</rdfs:label>
+  </owl:Class>
+  <owl:Class rdf:ID="QualificationEvidence"/>
+  <owl:Class rdf:ID="CompetencyLevel">
+    <rdfs:label xml:lang="de">Kompetenzniveau</rdfs:label>
+    <rdfs:label xml:lang="en">competency level</rdfs:label>
+  </owl:Class>
+  <owl:Class rdf:about="#CompetencyScale">
+    <rdfs:label xml:lang="en">competency dimension</rdfs:label>
+  </owl:Class>
+  <owl:Class rdf:ID="TrainingEvidence">
+    <rdfs:subClassOf rdf:resource="#CompetencyEvidence"/>
+  </owl:Class>
+  <owl:Class rdf:about="#Topic">
+    <synonym xml:lang="de">subject</synonym>
+    <rdfs:label xml:lang="en">topic</rdfs:label>
+    <rdfs:label xml:lang="de">Thema</rdfs:label>
+  </owl:Class>
+  <owl:Class rdf:ID="Training">
+    <rdfs:label xml:lang="en">training</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="InstructionalEntity"/>
+    </rdfs:subClassOf>
+    <rdfs:label xml:lang="de">Schulung</rdfs:label>
+  </owl:Class>
+  <owl:Class rdf:about="#InstructionalEntity">
+    <rdfs:label xml:lang="en">instructional entity</rdfs:label>
+    <rdfs:label xml:lang="de">Lehreinheit</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="LearningOpportunity"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Ability">
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="CompetencyElement"/>
+    </rdfs:subClassOf>
+    <rdfs:label xml:lang="de">FÃ¤higkeit</rdfs:label>
+    <rdfs:label xml:lang="en">ability</rdfs:label>
+  </owl:Class>
+  <owl:Class rdf:ID="Observation">
+    <rdfs:subClassOf rdf:resource="#CompetencyEvidence"/>
+    <rdfs:label xml:lang="en">observation</rdfs:label>
+    <rdfs:label xml:lang="de">Beobachtung</rdfs:label>
+  </owl:Class>
+  <owl:Class rdf:ID="Skill">
+    <rdfs:label xml:lang="en">skill</rdfs:label>
+    <rdfs:label xml:lang="de">Fertigkeit</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#CompetencyElement"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="LearningEvent"/>
+  <owl:Class rdf:about="#CompetencyElement">
+    <rdfs:label xml:lang="de">Kompetenzbaustein</rdfs:label>
+    <rdfs:label xml:lang="en">competency element</rdfs:label>
+    <rdfs:subClassOf rdf:resource="#Topic"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Employee">
+    <synonym xml:lang="en">learner</synonym>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#LearningOpportunity"/>
+    </rdfs:subClassOf>
+    <rdfs:label xml:lang="en">employee</rdfs:label>
+    <rdfs:label xml:lang="de">Mitarbeiter</rdfs:label>
+  </owl:Class>
+  <owl:Class>
+    <owl:unionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#CompetencyEvidence"/>
+      <owl:Class rdf:about="#LearningEvent"/>
+    </owl:unionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Competency">
+    <rdfs:label xml:lang="en">competency</rdfs:label>
+    <rdfs:subClassOf rdf:resource="#Topic"/>
+    <synonym xml:lang="en">competence</synonym>
+    <rdfs:label xml:lang="de">Kompetenz</rdfs:label>
+  </owl:Class>
+  <owl:Class rdf:ID="Process">
+    <rdfs:subClassOf rdf:resource="#OrganizationalEntity"/>
+  </owl:Class>
+  <owl:Class rdf:about="#LearningOpportunity">
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >&lt;p style="margin-top: 0">
+      
+    &lt;/p></rdfs:comment>
+    <rdfs:label xml:lang="de">Lerngelegenheit</rdfs:label>
+  </owl:Class>
+  <owl:Class rdf:ID="OrganizationalUnit">
+    <rdfs:subClassOf rdf:resource="#OrganizationalEntity"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Knowledge">
+    <rdfs:label xml:lang="en">knowledge</rdfs:label>
+    <rdfs:label xml:lang="de">Kenntnis</rdfs:label>
+    <rdfs:subClassOf rdf:resource="#CompetencyElement"/>
+  </owl:Class>
+  <owl:Class rdf:ID="LearningObject">
+    <rdfs:label xml:lang="en">learning object</rdfs:label>
+    <rdfs:label xml:lang="de">Lernobjekt</rdfs:label>
+    <rdfs:subClassOf rdf:resource="#InstructionalEntity"/>
+  </owl:Class>
+  <owl:ObjectProperty rdf:ID="has-competency">
+    <rdfs:range rdf:resource="#Competency"/>
+    <rdfs:subPropertyOf>
+      <owl:ObjectProperty rdf:ID="covers"/>
+    </rdfs:subPropertyOf>
+    <rdfs:domain rdf:resource="#Employee"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="for-opportunity">
+    <rdfs:range rdf:resource="#LearningOpportunity"/>
+    <rdfs:domain rdf:resource="#LearningEvent"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:about="#covers">
+    <rdfs:domain rdf:resource="#LearningOpportunity"/>
+    <rdfs:range rdf:resource="#Topic"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="consists-of-element">
+    <rdfs:range rdf:resource="#CompetencyElement"/>
+    <rdfs:domain rdf:resource="#Competency"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="consists-of-level">
+    <rdfs:range rdf:resource="#CompetencyLevel"/>
+    <rdfs:domain rdf:resource="#CompetencyScale"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="depends-on-entity">
+    <rdfs:range rdf:resource="#InstructionalEntity"/>
+    <rdfs:domain rdf:resource="#InstructionalEntity"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="for-competency">
+    <rdfs:range rdf:resource="#Competency"/>
+    <rdfs:domain rdf:resource="#CompetencyEvidence"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="has-objective">
+    <rdfs:domain rdf:resource="#InstructionalEntity"/>
+    <rdfs:subPropertyOf rdf:resource="#covers"/>
+    <rdfs:range rdf:resource="#Competency"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="is-in">
+    <rdfs:range rdf:resource="#OrganizationalEntity"/>
+    <rdfs:domain rdf:resource="#Employee"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="is-composed-of">
+    <rdfs:range rdf:resource="#Competency"/>
+    <rdfs:domain>
+      <owl:Class>
+        <owl:unionOf rdf:parseType="Collection">
+          <owl:Class rdf:about="#Qualification"/>
+          <owl:Class rdf:about="#Competency"/>
+        </owl:unionOf>
+      </owl:Class>
+    </rdfs:domain>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="subsumes">
+    <rdfs:range rdf:resource="#Competency"/>
+    <rdfs:domain rdf:resource="#Competency"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#TransitiveProperty"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="evidence-based-on">
+    <rdfs:range rdf:resource="#Training"/>
+    <rdfs:domain rdf:resource="#TrainingEvidence"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="has-prerequisite">
+    <rdfs:domain rdf:resource="#InstructionalEntity"/>
+    <rdfs:range rdf:resource="#Competency"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="has-level">
+    <rdfs:range rdf:resource="#CompetencyLevel"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+    <rdfs:domain rdf:resource="#Competency"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="has-qualification">
+    <rdfs:range rdf:resource="#QualificationEvidence"/>
+    <rdfs:domain rdf:resource="#Employee"/>
+  </owl:ObjectProperty>
+  <owl:TransitiveProperty rdf:ID="is-higher-than">
+    <rdfs:domain rdf:resource="#CompetencyLevel"/>
+    <rdfs:range rdf:resource="#CompetencyLevel"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+  </owl:TransitiveProperty>
+  <owl:FunctionalProperty rdf:ID="confidence">
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+    <rdfs:domain rdf:resource="#Observation"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
+  </owl:FunctionalProperty>
+  <owl:InverseFunctionalProperty rdf:ID="has-evidence">
+    <rdfs:range>
+      <owl:Class>
+        <owl:unionOf rdf:parseType="Collection">
+          <owl:Class rdf:about="#CompetencyEvidence"/>
+          <owl:Class rdf:about="#QualificationEvidence"/>
+        </owl:unionOf>
+      </owl:Class>
+    </rdfs:range>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdfs:domain rdf:resource="#Employee"/>
+  </owl:InverseFunctionalProperty>
+  <owl:AnnotationProperty rdf:ID="has-scale">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdfs:range rdf:resource="#CompetencyScale"/>
+  </owl:AnnotationProperty>
+  <owl:AnnotationProperty rdf:ID="synonym">
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
+  </owl:AnnotationProperty>
+</rdf:RDF>
+
+<!-- Created with Protege (with OWL Plugin 2.2, Build 322)  http://protege.stanford.edu -->
