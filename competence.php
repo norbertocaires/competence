@@ -12,9 +12,10 @@ use Friendica\Core\Hook;
 use Friendica\Core\L10n;
 use Friendica\Core\System;
 use Friendica\Core\Logger;
-use Friendica\Content\Nav;
 use Friendica\Core\Renderer;
 use Friendica\Core\Config;
+
+use Friendica\Content\Nav;
 
 use Friendica\Util\Strings;
 
@@ -24,6 +25,8 @@ use Friendica\Model\Profile;
 use Friendica\Model\Contact;
 
 use Friendica\Protocol\DFRN;
+
+use Friendica\Core\PConfig;
 
 function competence_install() {
 	Hook::register('profile_tabs', 'addon/competence/competence.php', 'competence_profile_tabs');
@@ -102,18 +105,77 @@ function competence_init($a) {
 	}
 }
 
+function competence_post(App $a) {
+
+	$action = $_GET["action"];
+	if($action == 'add'){
+		$addFile = "addon/competence/competence_add.php";
+
+		if (file_exists($addFile)){	
+			include_once($addFile);
+		} else {
+			notice(L10n::t('Arquivo competence_add não encontrado.') . EOL);
+			return;
+		}
+	
+		call_user_func('competence_add_post', $a);
+	}
+
+}
+
 function competence_content(App $a) {
+
 	if((Config::get('system','block_public')) && (! local_user()) && (! remote_user())) {
 		notice(L10n::t('Public access denied.') . EOL);
 		return;
 	}
 
-	$o = '';
+	if(! array_key_exists('user', $a->data)) {
+		notice(L10n::t('No user selected') . EOL );
+		return;
+	}
+
+	$toReturn = '';
+
 	$is_owner = local_user() == $a->user['uid'];
 
+	$action = $_GET["action"];
+	if (!$action){
+		$toReturn = content($a, $is_owner);
+	} else if($is_owner && $action == 'add'){
+		$addFile = "addon/competence/competence_add.php";
 
-	include_once("/var/www/friendica/addon/competence/arc2-starter-pack/arc/ARC2.php");
-	include_once("/var/www/friendica/addon/competence/arc2-starter-pack/config.php");
+		if (file_exists($addFile)){	
+			include_once($addFile);
+		} else {
+			notice(L10n::t('File competence_add not found.') . EOL);
+			return;
+		}
+
+		$toReturn .= call_user_func('competence_add_content', $a);
+
+	} else if($is_owner && $action == 'update'){
+
+		$updateFile = "addon/competence/competence_update.php";
+
+		if (file_exists($updateFile)){	
+			include_once($updateFile);
+		} else {
+			notice(L10n::t('File competence_update not found.') . EOL);
+			return;
+		}
+
+		$toReturn .= call_user_func('competence_update_content', $a);
+	
+	} else if($is_owner && $action == 'del'){
+		$toReturn = content($a, $is_owner);
+	}
+	return $toReturn;
+}
+
+function content(App $a, $is_owner) {
+	include_once("addon/competence/arc2-starter-pack/arc/ARC2.php");
+	include_once("addon/competence/arc2-starter-pack/config.php");
 	$store = ARC2::getStore($arc_config);
 	if (!$store->isSetUp()) {
 		$store->setUp(); /* create MySQL tables */
@@ -135,49 +197,48 @@ function competence_content(App $a) {
 		}
 	} else{
 		return;
-	}
+	}       
 
-
-	if(! array_key_exists('user', $a->data)) {
-		notice(L10n::t('No competencie selected') . EOL );
-		return;
-	}
-        
-
-        $competencies = [];
-
+	$competencies = [];
 	foreach($competenciesOWL as $owl){
+
+
 		$name = '';
 		$statement = '';
-
+		if(strpos($owl['subject'], "#Competency_".$rr['competencyId'])){
+			if(strpos($owl['property'], "#name")){
+				$name = $owl['object'];
+			}
+		}
+		if(strpos($owl['subject'], "#Competency_".$rr['competencyId'])){
+			if(strpos($owl['property'], "#statement")){
+				$statement = $owl['object'];
+			}
+		}
 
 		$competencies[] = [
 			'id'          => 0,
 			
-		        'name'        => $name,
+			'name'        => $name,
 			'statement'   => $statement,
 
-		        '$show'        => $is_owner ? '': 'none' ,
-		        'edit'        => 'update_competencie/' . $a->user['nickname'] .'/'. 0,
-		        'del'         => 'competencie/'. $a->user['nickname'] .'/'. 0 
+			'$show'       => $is_owner ? '': 'none' ,
+			'edit'        => 'competence/' . $a->user['nickname'] .'?action=update&competencyId='. 0,
+			'del'         => 'competence/' . $a->user['nickname'] .'?action=del&competencyId='. 0 
 		];
 	}
-
-
-
 
 	$o .= Profile::getTabs($a, $is_owner, $a->profile['nickname']);
 
 	$tpl = Renderer::getMarkupTemplate("competencies.tpl", "addon/competence/");
 
 	$o .= Renderer::replaceMacros($tpl, [
-		'q'	       => $t,
 		'$title'       => L10n::t('Competencias'),
-                '$show'        => $is_owner ? '': 'none' ,
-		'$edit'        => 'Editar competencia',
-                '$del'         => 'Deletar',
-                '$add'         => 'Adicionar competencia',
-		'$addLink'     => System::baseUrl().'/competence/add_competence/' . $a->user['nickname'],
+		'$show'        => $is_owner ? '': 'none' ,
+		'$edit'        => L10n::t('Editar competencia'),
+		'$del'         => L10n::t('Deletar'),
+		'$add'         => L10n::t('Adicionar competencia'),
+		'$addLink'     => System::baseUrl().'/competence/' . $a->user['nickname'] . '?action=add',
 		'$competencies'=> $competencies,
 	]);
 
