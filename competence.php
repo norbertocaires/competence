@@ -29,15 +29,21 @@ use Friendica\Protocol\DFRN;
 use Friendica\Core\PConfig;
 
 function competence_install() {
+	Hook::register('nav_info', 'addon/competence/competence.php', 'competence_nav_info');
 	Hook::register('profile_tabs', 'addon/competence/competence.php', 'competence_profile_tabs');
 
 	Logger::log('registered competence');
 }
 
 function competence_uninstall() {
+	Hook::unregister('nav_info', 'addon/competence/competence.php', 'competence_nav_info');
 	Hook::unregister('profile_tabs', 'addon/competence/competence.php', 'competence_profile_tabs');
 
 	Logger::log('unregistered competence');
+}
+
+function competence_nav_info($a, &$b){
+	$b['searchoption'][] = L10n::t("Competencies");
 }
 
 function competence_profile_tabs($a, &$b) {
