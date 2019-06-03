@@ -108,19 +108,33 @@ function competence_init($a) {
 function competence_post(App $a) {
 
 	$action = $_GET["action"];
+	$competencyId = $_GET["competencyId"];
 	if($action == 'add'){
 		$addFile = "addon/competence/competence_add.php";
 
 		if (file_exists($addFile)){	
 			include_once($addFile);
 		} else {
-			notice(L10n::t('Arquivo competence_add não encontrado.') . EOL);
+			notice(L10n::t('File competence_add not found.') . EOL);
 			return;
 		}
 	
-		call_user_func('competence_add_post', $a);
-	}
+		call_user_func('competence_add_post', $a, $competencyId);
+	} else if($action == 'update'){
+		$updateFile = "addon/competence/competence_update.php";
 
+		if (file_exists($updateFile)){	
+			include_once($updateFile);
+		} else {
+			notice(L10n::t('File competence_update not found.') . EOL);
+			return;
+		}
+	
+		call_user_func('competence_update_post', $a, $competencyId);
+	
+	} else if($action == 'del'){
+		delete($a, $competencyId);
+	}
 }
 
 function competence_content(App $a) {
@@ -140,7 +154,7 @@ function competence_content(App $a) {
 	$is_owner = local_user() == $a->user['uid'];
 
 	$action = $_GET["action"];
-	if (!$action){
+	if (!$action || $action == 'del'){
 		$toReturn = content($a, $is_owner);
 	} else if($is_owner && $action == 'add'){
 		$addFile = "addon/competence/competence_add.php";
@@ -165,7 +179,7 @@ function competence_content(App $a) {
 			return;
 		}
 
-		$toReturn .= call_user_func('competence_update_content', $a);
+		$toReturn .= call_user_func('competence_update_content', $a, $competencyId);
 	
 	} else if($is_owner && $action == 'del'){
 		$toReturn = content($a, $is_owner);
@@ -185,53 +199,56 @@ function content(App $a, $is_owner) {
 		?subject ?property ?object .
 		}
 	';
-	$t = '';
 	$rows = $store->query($q, 'rows');
 
 	$competenciesOWL = [];
 	if ($rows) {
 		foreach ($rows as $row) {
-			if(strpos($row['subject'], "#Competency_")){
+			if(strpos($row['subject'], "#userId_" . $a->user['uid'] )){
 				$competenciesOWL[] = $row;
 			}
 		}
 	} else{
 		return;
-	}       
+	}
+	
+	$competenciesIds = [];
+	foreach($competenciesOWL as $owl){
+		if(strpos($owl['property'], "#name")){
+			$temp = explode('#', $owl['subject'], -1)[1];
+			$id = explode('_', $temp, 2)[1];
+			$competenciesIds[] = $id;
+		}
+	}
 
 	$competencies = [];
-	foreach($competenciesOWL as $owl){
-
-
+	foreach($competenciesIds as $id){
 		$name = '';
 		$statement = '';
-		if(strpos($owl['subject'], "#Competency_".$rr['competencyId'])){
-			if(strpos($owl['property'], "#name")){
-				$name = $owl['object'];
-			}
+		foreach($competenciesOWL as $owl){
+			if(strpos($owl['subject'], "#CompetencyId_" . $id )){
+				if(strpos($owl['property'], "#name")){
+					$name = $owl['object'];
+				}
+				if(strpos($owl['property'], "#statement")){
+					$statement = $owl['object'];
+				}
+			}	
 		}
-		if(strpos($owl['subject'], "#Competency_".$rr['competencyId'])){
-			if(strpos($owl['property'], "#statement")){
-				$statement = $owl['object'];
-			}
-		}
-
-		$competencies[] = [
-			'id'          => 0,
-			
+		$competencies[] = [			
 			'name'        => $name,
 			'statement'   => $statement,
 
 			'$show'       => $is_owner ? '': 'none' ,
-			'edit'        => 'competence/' . $a->user['nickname'] .'?action=update&competencyId='. 0,
-			'del'         => 'competence/' . $a->user['nickname'] .'?action=del&competencyId='. 0 
+			'edit'        => 'competence/' . $a->user['nickname'] .'?action=update&competencyId='. $id,
+			'del'         => 'competence/' . $a->user['nickname'] .'?action=del&competencyId='. $id 
 		];
+
 	}
+	sort($competencies);
 
 	$o .= Profile::getTabs($a, $is_owner, $a->profile['nickname']);
-
 	$tpl = Renderer::getMarkupTemplate("competencies.tpl", "addon/competence/");
-
 	$o .= Renderer::replaceMacros($tpl, [
 		'$title'       => L10n::t('Competencias'),
 		'$show'        => $is_owner ? '': 'none' ,
@@ -243,4 +260,39 @@ function content(App $a, $is_owner) {
 	]);
 
 	return $o;
+}
+
+function delete(App $a, $competencyId){
+	include_once("addon/competence/arc2-starter-pack/arc/ARC2.php");
+	include_once("addon/competence/arc2-starter-pack/config.php");
+	$store = ARC2::getStore($arc_config); 
+	$q = '
+		SELECT DISTINCT ?subject ?property ?object WHERE { 
+		?subject ?property ?object .
+		}
+	';
+	$rows = $store->query($q, 'rows');
+
+	$ok = false;
+	$name = '';
+	$statement = '';
+	if ($rows) {
+		foreach ($rows as $row) {
+			if(strpos($row['subject'], "#CompetencyId_" . $competencyId)){
+				$query = 'DELETE { <' . $row['subject'] . '> <' . $row['property'] . '> "' . $row['object'] . '" . }';
+				$ok = $store->query($query);
+			}
+		}
+	} else{
+		return;
+	}
+    
+	if ($ok) {
+		info(L10n::t('Competence deleted.') . EOL);
+		$redirect = System::baseUrl() . '/competence/' .  $a->user['nickname'];
+		header("location:$redirect");
+		exit();
+	}else{
+		info(L10n::t("erro on delete competence") . EOL);
+	}
 }

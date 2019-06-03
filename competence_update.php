@@ -25,7 +25,7 @@ use Friendica\Protocol\DFRN;
 
 use Friendica\Util\DateTimeFormat;
 
-function competence_update_post(App $a) {
+function competence_update_post(App $a, $competencyId) {
 
 	if (! local_user()) {
 		notice(L10n::t('Permission denied.') . EOL);
@@ -43,11 +43,9 @@ function competence_update_post(App $a) {
 	$t = '';
 	$rows = $store->query($q, 'rows');
 
-	$name = '';
-	$statement = '';
 	if ($rows) {
 		foreach ($rows as $row) {
-			if(strpos($row['subject'], "#Competency_" . $r[0]['competencyId'])){
+			if(strpos($row['subject'], "#CompetencyId_" . $competencyId)){
 				$query = 'DELETE { <' . $row['subject'] . '> <' . $row['property'] . '> "' . $row['object'] . '" . }';
 				$store->query($query);
 			}
@@ -57,32 +55,32 @@ function competence_update_post(App $a) {
 	}
 
 	$queryName = 'INSERT INTO <file:///home/norberto/teste.owl> CONSTRUCT {
-			<http://www.professional-learning.eu/ontologies/competence.owl#Competency_' . $r[0]['competencyId'] . '> 
-			<http://www.w3.org/2000/01/rdf-schema#name> "' . 
-			trim($_POST['competencie_name']) . 
-			'" . }';
+		<http://www.professional-learning.eu/ontologies/competence.owl#CompetencyId_' . $idToSave . '#userId_' . $a->user['uid']  . '> 
+		<http://www.w3.org/2000/01/rdf-schema#name> "' . 
+		trim($_POST['competencie_name']) . 
+		'" . }';
 	$store->query($queryName);
 
 	$queryStatement = 'INSERT INTO <file:///home/norberto/teste.owl> CONSTRUCT {
-				<http://www.professional-learning.eu/ontologies/competence.owl#Competency_' . $r[0]['competencyId'] . '> 
-				<http://www.w3.org/2000/01/rdf-schema#statement> "' . 
-				trim($_POST['competencie_statement']) . 
-				'" . }';
-	$store->query($queryStatement);
+			<http://www.professional-learning.eu/ontologies/competence.owl#CompetencyId_' . $idToSave . '#userId_' . $a->user['uid'] . '> 
+			<http://www.w3.org/2000/01/rdf-schema#statement> "' . 
+			trim($_POST['competencie_statement']) . 
+			'" . }';
+	$r = $store->query($queryStatement);
         
 
-        if ($r) {
-            info(L10n::t('Competencia atualizada.') . EOL);
-            $redirect = System::baseUrl() . '/competencie/' . $a->data['user']['nickname'];
-            header("location:$redirect");
-            exit();
-        }else{
-            info(L10n::t("erro") . EOL);
-        }
+	if ($r) {
+		info(L10n::t('Update sucess.') . EOL);
+		$redirect = System::baseUrl() . '/competence/' . $a->user['nickname'];
+		header("location:$redirect");
+		exit();
+	}else{
+		info(L10n::t("erro") . EOL);
+	}
 }
 
 
-function competence_update_content(App $a) {
+function competence_update_content(App $a, $competencyId) {
 
 	if((Config::get('system','block_public')) && (! local_user()) && (! remote_user())) {
 		notice(L10n::t('Public access denied.') . EOL);
@@ -109,7 +107,7 @@ function competence_update_content(App $a) {
 	$statement = '';
 	if ($rows) {
 		foreach ($rows as $row) {
-			if(strpos($row['subject'], "#Competency_" . $r[0]['competencyId'])){
+			if(strpos($row['subject'], "#CompetencyId_" . $competencyId )){
 				if(strpos($row['property'], "#name")){
 					$name = $row['object'];
 				}
