@@ -43,13 +43,27 @@ function competence_uninstall() {
 }
 
 function competence_nav_info($a, &$b){
-	$b['searchoption'][] = L10n::t("Competencies");
+	if(array_key_exists('search-option', $_GET)){
+		if($_GET['search-option'] == 'fulltext'){
+			$searchFile = "addon/competence/competence_search.php";
+
+			if (file_exists($searchFile)){	
+				include_once($searchFile);
+			} else {
+				notice(L10n::t('File competence_search not found.') . EOL);
+				return;
+			}
+	
+			$a->page['content'] .= call_user_func('competence_search_content', $a, $_GET['search']);
+
+		}
+	}
+
 }
 
 function competence_profile_tabs($a, &$b) {
 	$temp = [
 		'label' => L10n::t('Competencie'),
-		/*'url'   => $a->getBaseURL() . '/addon/competencie/' . $b['nickname'],*/
 		'url' 	=> 'competence/' . $b['nickname'],
 		'sel'   => !$b['tab'] && $a->argv[0] == 'competence' ? 'active' : '',
 		'title' => L10n::t('Competencie'),
@@ -156,10 +170,14 @@ function competence_content(App $a) {
 	}
 
 	$toReturn = '';
+	$nickname =  explode('?', explode('/', $_SERVER['REQUEST_URI'])[2])[0];
+	$user = dba::selectFirst('user', ['uid'], ['nickname' => $nickname]);
 
-	$is_owner = local_user() == $a->user['uid'];
+
+	$is_owner = local_user() == $user['uid'];
 
 	$action = $_GET["action"];
+	$competencyId = $_GET["competencyId"];
 	if (!$action || $action == 'del'){
 		$toReturn = content($a, $is_owner);
 	} else if($is_owner && $action == 'add'){
@@ -221,9 +239,8 @@ function content(App $a, $is_owner) {
 	$competenciesIds = [];
 	foreach($competenciesOWL as $owl){
 		if(strpos($owl['property'], "#name")){
-			$temp = explode('#', $owl['subject'], -1)[1];
-			$id = explode('_', $temp, 2)[1];
-			$competenciesIds[] = $id;
+			$temp = explode('#', $owl['subject']);
+			$competenciesIds[] = explode('_', $temp[1])[1];
 		}
 	}
 
@@ -258,9 +275,9 @@ function content(App $a, $is_owner) {
 	$o .= Renderer::replaceMacros($tpl, [
 		'$title'       => L10n::t('Competencias'),
 		'$show'        => $is_owner ? '': 'none' ,
-		'$edit'        => L10n::t('Editar competencia'),
-		'$del'         => L10n::t('Deletar'),
-		'$add'         => L10n::t('Adicionar competencia'),
+		'$edit'        => L10n::t('Edit competencie'),
+		'$del'         => L10n::t('Delete competencie'),
+		'$add'         => L10n::t('Add competencie'),
 		'$addLink'     => System::baseUrl().'/competence/' . $a->user['nickname'] . '?action=add',
 		'$competencies'=> $competencies,
 	]);

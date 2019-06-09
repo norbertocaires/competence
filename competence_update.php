@@ -55,14 +55,14 @@ function competence_update_post(App $a, $competencyId) {
 	}
 
 	$queryName = 'INSERT INTO <file:///home/norberto/teste.owl> CONSTRUCT {
-		<http://www.professional-learning.eu/ontologies/competence.owl#CompetencyId_' . $idToSave . '#userId_' . $a->user['uid']  . '> 
+		<http://www.professional-learning.eu/ontologies/competence.owl#CompetencyId_' . $competencyId . '#userId_' . $a->user['uid']  . '> 
 		<http://www.w3.org/2000/01/rdf-schema#name> "' . 
 		trim($_POST['competencie_name']) . 
 		'" . }';
 	$store->query($queryName);
 
 	$queryStatement = 'INSERT INTO <file:///home/norberto/teste.owl> CONSTRUCT {
-			<http://www.professional-learning.eu/ontologies/competence.owl#CompetencyId_' . $idToSave . '#userId_' . $a->user['uid'] . '> 
+			<http://www.professional-learning.eu/ontologies/competence.owl#CompetencyId_' . $competencyId . '#userId_' . $a->user['uid'] . '> 
 			<http://www.w3.org/2000/01/rdf-schema#statement> "' . 
 			trim($_POST['competencie_statement']) . 
 			'" . }';
@@ -131,9 +131,9 @@ function competence_update_content(App $a, $competencyId) {
 	$tpl = Renderer::getMarkupTemplate("competencie_fields.tpl", "addon/competence/");
 
 	$o = Renderer::replaceMacros($tpl, [
-		'$title'       => L10n::t('Adicionar competencia'),          
-		'$save'        => 'Salvar',
-		'$cancel'      => 'Cancelar',
+		'$title'       => L10n::t('Edit competencie'),          
+		'$save'        => 'Save',
+		'$cancel'      => 'Cancel',
 		'$cancelLink'  => System::baseUrl(). '/competence/' . $a->user['nickname'],
         '$competencie' => $competencie,            
 	]);

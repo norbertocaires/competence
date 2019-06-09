@@ -4,20 +4,9 @@
 			{{include file="addon/competence/templates/competencie.tpl"}}
 		{{/foreach}}
 	{{else}}
-		Nenhuma competencia adicionada
+		<b>No added competencie</b>
 	{{/if}}
 </div>
-
-<!--<br>
-
-<div name="add-competencie" style="display: {{$show}};" >
-	<form id="add-competence" name="add-competence" method="post" >
-		<a id="event-submit" class="btn" title="{{$add}}" onclick="document.getElementById('add-competence').submit();">
-			{{$add}}
-		</a>
-	</form>
-	{{$q}}
-</div>-->
 
 <br>
 
