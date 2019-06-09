@@ -5,36 +5,21 @@
 
 use Friendica\App;
 
-use Friendica\Content\Nav;
-
 use Friendica\Core\Config;
 use Friendica\Core\L10n;
 use Friendica\Core\System;
-use Friendica\Core\Worker;
 use Friendica\Core\Renderer;
 
-use Friendica\Database\DBM;
-
-use Friendica\Model\Contact;
-use Friendica\Model\Group;
-use Friendica\Model\Item;
-use Friendica\Model\Profile;
-use Friendica\Model\Term;
-
-use Friendica\Protocol\DFRN;
-
-use Friendica\Util\DateTimeFormat;
-
-function competence_update_post(App $a, $competencyId) {
-
-	if (! local_user()) {
+function competence_update_post(App $a, $competencyId)
+{
+	if (!local_user()) {
 		notice(L10n::t('Permission denied.') . EOL);
 		return;
 	}
 
 	include_once("addon/competence/arc2-starter-pack/arc/ARC2.php");
 	include_once("addon/competence/arc2-starter-pack/config.php");
-	$store = ARC2::getStore($arc_config); 
+	$store = ARC2::getStore($arc_config);
 	$q = '
 		SELECT DISTINCT ?subject ?property ?object WHERE { 
 		?subject ?property ?object .
@@ -45,57 +30,58 @@ function competence_update_post(App $a, $competencyId) {
 
 	if ($rows) {
 		foreach ($rows as $row) {
-			if(strpos($row['subject'], "#CompetencyId_" . $competencyId)){
+			if (strpos($row['subject'], "#CompetencyId_" . $competencyId)) {
 				$query = 'DELETE { <' . $row['subject'] . '> <' . $row['property'] . '> "' . $row['object'] . '" . }';
 				$store->query($query);
 			}
 		}
-	} else{
+	} else {
 		return;
 	}
 
 	$queryName = 'INSERT INTO <file:///home/norberto/teste.owl> CONSTRUCT {
 		<http://www.professional-learning.eu/ontologies/competence.owl#CompetencyId_' . $competencyId . '#userId_' . $a->user['uid']  . '> 
-		<http://www.w3.org/2000/01/rdf-schema#name> "' . 
-		trim($_POST['competencie_name']) . 
+		<http://www.w3.org/2000/01/rdf-schema#name> "' .
+		trim($_POST['competencie_name']) .
 		'" . }';
 	$store->query($queryName);
 
 	$queryStatement = 'INSERT INTO <file:///home/norberto/teste.owl> CONSTRUCT {
 			<http://www.professional-learning.eu/ontologies/competence.owl#CompetencyId_' . $competencyId . '#userId_' . $a->user['uid'] . '> 
-			<http://www.w3.org/2000/01/rdf-schema#statement> "' . 
-			trim($_POST['competencie_statement']) . 
-			'" . }';
+			<http://www.w3.org/2000/01/rdf-schema#statement> "' .
+		trim($_POST['competencie_statement']) .
+		'" . }';
 	$r = $store->query($queryStatement);
-        
+
 
 	if ($r) {
 		info(L10n::t('Update sucess.') . EOL);
 		$redirect = System::baseUrl() . '/competence/' . $a->user['nickname'];
 		header("location:$redirect");
 		exit();
-	}else{
+	} else {
 		info(L10n::t("erro") . EOL);
 	}
 }
 
 
-function competence_update_content(App $a, $competencyId) {
+function competence_update_content(App $a, $competencyId)
+{
 
-	if((Config::get('system','block_public')) && (! local_user()) && (! remote_user())) {
+	if ((Config::get('system', 'block_public')) && (!local_user()) && (!remote_user())) {
 		notice(L10n::t('Public access denied.') . EOL);
 		return;
 	}
 
 
-	if(! array_key_exists('user', $a->data)) {
-		notice(L10n::t('No user selected') . EOL );
+	if (!array_key_exists('user', $a->data)) {
+		notice(L10n::t('No user selected') . EOL);
 		return;
 	}
 
 	include_once("addon/competence/arc2-starter-pack/arc/ARC2.php");
 	include_once("addon/competence/arc2-starter-pack/config.php");
-	$store = ARC2::getStore($arc_config); 
+	$store = ARC2::getStore($arc_config);
 	$q = '
 		SELECT DISTINCT ?subject ?property ?object WHERE { 
 		?subject ?property ?object .
@@ -107,22 +93,22 @@ function competence_update_content(App $a, $competencyId) {
 	$statement = '';
 	if ($rows) {
 		foreach ($rows as $row) {
-			if(strpos($row['subject'], "#CompetencyId_" . $competencyId )){
-				if(strpos($row['property'], "#name")){
+			if (strpos($row['subject'], "#CompetencyId_" . $competencyId)) {
+				if (strpos($row['property'], "#name")) {
 					$name = $row['object'];
 				}
-				if(strpos($row['property'], "#statement")){
+				if (strpos($row['property'], "#statement")) {
 					$statement = $row['object'];
 				}
 			}
 		}
-	} else{
+	} else {
 		return;
 	}
 
 	$competencie = [
 		'id'		  => $r[0]['id'],
-	
+
 		'name'        => $name,
 		'statement'   => $statement,
 	];
@@ -131,14 +117,12 @@ function competence_update_content(App $a, $competencyId) {
 	$tpl = Renderer::getMarkupTemplate("competencie_fields.tpl", "addon/competence/");
 
 	$o = Renderer::replaceMacros($tpl, [
-		'$title'       => L10n::t('Edit competencie'),          
+		'$title'       => L10n::t('Edit competencie'),
 		'$save'        => 'Save',
 		'$cancel'      => 'Cancel',
-		'$cancelLink'  => System::baseUrl(). '/competence/' . $a->user['nickname'],
-        '$competencie' => $competencie,            
+		'$cancelLink'  => System::baseUrl() . '/competence/' . $a->user['nickname'],
+		'$competencie' => $competencie,
 	]);
-        
+
 	return $o;
 }
-
-

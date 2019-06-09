@@ -5,29 +5,14 @@
 
 use Friendica\App;
 
-use Friendica\Content\Nav;
-
 use Friendica\Core\Config;
 use Friendica\Core\L10n;
 use Friendica\Core\System;
-use Friendica\Core\Worker;
 use Friendica\Core\Renderer;
 
-use Friendica\Database\DBM;
-
-use Friendica\Model\Contact;
-use Friendica\Model\Group;
-use Friendica\Model\Item;
-use Friendica\Model\Profile;
-use Friendica\Model\Term;
-
-use Friendica\Protocol\DFRN;
-
-use Friendica\Util\DateTimeFormat;
-
-
-function competence_add_post(App $a) {
-	if (! local_user()) {
+function competence_add_post(App $a)
+{
+	if (!local_user()) {
 		notice(L10n::t('Permission denied.') . EOL);
 		return;
 	}
@@ -48,20 +33,20 @@ function competence_add_post(App $a) {
 	$competenciesOWL = [];
 	if ($rows) {
 		foreach ($rows as $row) {
-			if(strpos($row['subject'], "#userId_" . $a->user['uid'] )){
+			if (strpos($row['subject'], "#userId_")) {
 				$competenciesOWL[] = $row;
 			}
 		}
-	} else{
+	} else {
 		return;
 	}
-	
+
 	$idToSave = 0;
-	foreach($competenciesOWL as $owl){
-		if(strpos($owl['property'], "#name")){
-			$temp = explode('#', $owl['subject'], -1)[1];
-			$id = explode('_', $temp, 2)[1];
-			if($idToSave < $id)
+	foreach ($competenciesOWL as $owl) {
+		if (strpos($owl['property'], "#name")) {
+			$temp = explode('#', $owl['subject'])[1];
+			$id = explode('_', $temp)[1];
+			if ($idToSave < $id)
 				$idToSave = $id;
 		}
 	}
@@ -69,66 +54,66 @@ function competence_add_post(App $a) {
 	$idToSave = $idToSave + 1;
 	$queryName = 'INSERT INTO <file:///home/norberto/teste.owl> CONSTRUCT {
 			<http://www.professional-learning.eu/ontologies/competence.owl#CompetencyId_' . $idToSave . '#userId_' . $a->user['uid']  . '> 
-			<http://www.w3.org/2000/01/rdf-schema#name> "' . 
-			trim($_POST['competencie_name']) . 
-			'" . }';
+			<http://www.w3.org/2000/01/rdf-schema#name> "' .
+		trim($_POST['competencie_name']) .
+		'" . }';
 	$store->query($queryName);
 
 	$queryStatement = 'INSERT INTO <file:///home/norberto/teste.owl> CONSTRUCT {
 				<http://www.professional-learning.eu/ontologies/competence.owl#CompetencyId_' . $idToSave . '#userId_' . $a->user['uid'] . '> 
-				<http://www.w3.org/2000/01/rdf-schema#statement> "' . 
-				trim($_POST['competencie_statement']) . 
-				'" . }';
+				<http://www.w3.org/2000/01/rdf-schema#statement> "' .
+		trim($_POST['competencie_statement']) .
+		'" . }';
 	$r = false;
 	$r = $store->query($queryStatement);
-        
+
 	if ($r) {
 		info(L10n::t('Added competence.') . EOL);
 		$redirect = System::baseUrl() . '/competence/' .  $a->user['nickname'];
 		header("location:$redirect");
 		exit();
-	}else{
+	} else {
 		info(L10n::t("erro on added competence") . EOL);
 	}
-
 }
 
 
-function competence_add_content(App $a) {
-    
-	if((Config::get('system','block_public')) && (! local_user()) && (! remote_user())) {
+function competence_add_content(App $a)
+{
+
+	if ((Config::get('system', 'block_public')) && (!local_user()) && (!remote_user())) {
 		notice(L10n::t('Public access denied.') . EOL);
 		return;
 	}
 
-	if(! array_key_exists('user', $a->data) && $a->user && $a->user['uid']) {
-		notice(L10n::t('No user selected') . EOL );
+	if (!array_key_exists('user', $a->data) && $a->user && $a->user['uid']) {
+		notice(L10n::t('No user selected') . EOL);
 		return;
 	}
-        
-    $competencie = [
+
+	$competencie = [
 		'id'          => '',
-			
-        'name'        => '',
+
+		'name'        => '',
 		'statement'   => '',
-                    
-        'idnumber'    => '',
-        'autonomy'    => false,
-        'frequency'   => false,
-        'familiarity' => false,
-        'scope'       => false,
-        'complexity'  => 'weak',
+
+		'idnumber'    => '',
+		'autonomy'    => false,
+		'frequency'   => false,
+		'familiarity' => false,
+		'scope'       => false,
+		'complexity'  => 'weak',
 	];
-        
+
 	$tpl = Renderer::getMarkupTemplate("competencie_fields.tpl", "addon/competence/");
 
 	$o = Renderer::replaceMacros($tpl, [
-		'$title'       => L10n::t('Add competence'),          
+		'$title'       => L10n::t('Add competence'),
 		'$save'        => 'Save',
 		'$cancel'      => 'Cancel',
-		'$cancelLink'  => System::baseUrl(). '/competence/' . $a->user['nickname'],
-        '$competencie' => $competencie,
+		'$cancelLink'  => System::baseUrl() . '/competence/' . $a->user['nickname'],
+		'$competencie' => $competencie,
 	]);
-        
+
 	return $o;
 }
